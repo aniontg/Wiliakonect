@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#faf9fc" />
+    <meta name="description" content="Sign in or create your Wiliakonect account." />
+    <title>Sign in — Wiliakonect</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  </head>
+  <body data-page="auth">
+    <!-- EDIT: Shared header and logo for the account pages. -->
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href="index.html" aria-label="Wiliakonect home">
+          <img class="brand-logo" src="brand.svg" alt="Wiliakonect" />
+        </a>
+        <a class="auth-home-link" href="index.html">Back to website <span aria-hidden="true">↗</span></a>
+      </div>
+    </header>
+    <!-- EDIT: Sign-in/sign-up content, labels, and buttons are in this card. -->
+    <main class="auth-page">
+      <section class="auth-card" aria-labelledby="auth-title">
+        <p class="eyebrow"><span class="eyebrow-line"></span> YOUR WILIAKONECT ACCOUNT</p>
+        <h1 id="auth-title">Welcome <span>back.</span></h1>
+        <p class="auth-intro">Sign in to your account or create one to get started.</p>
+
+        <div class="auth-tabs" role="group" aria-label="Choose an account action">
+          <button class="auth-tab is-active" id="show-sign-in" type="button" aria-pressed="true">Sign in</button>
+          <button class="auth-tab" id="show-sign-up" type="button" aria-pressed="false">Create account</button>
+        </div>
+
+        <button class="google-button" id="google-sign-in" type="button">
+          <svg viewBox="0 0 48 48" aria-hidden="true">
+            <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5Z" transform="translate(0 4)" />
+            <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.76 7.18l7.73 6C44.42 38.05 46.98 31.92 46.98 24.55Z" />
+            <path fill="#FBBC05" d="M10.53 28.59a14.4 14.4 0 0 1 0-9.18l-7.98-6.19a23.95 23.95 0 0 0 0 21.56l7.98-6.19Z" transform="translate(0 4)" />
+            <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.91-5.8l-7.73-6c-2.15 1.45-4.92 2.3-8.18 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48Z" />
+          </svg>
+          Continue with Google
+        </button>
+
+        <div class="auth-divider"><span>or continue with email</span></div>
+
+        <form class="auth-form" id="sign-in-form">
+          <label for="sign-in-email">Email address</label>
+          <input id="sign-in-email" name="email" type="email" autocomplete="email" required />
+          <label for="sign-in-password">Password</label>
+          <input id="sign-in-password" name="password" type="password" autocomplete="current-password" required />
+          <button class="button button-primary auth-submit" type="submit">Sign in <span aria-hidden="true">↗</span></button>
+        </form>
+
+        <form class="auth-form" id="sign-up-form" hidden>
+          <label for="sign-up-name">Your name</label>
+          <input id="sign-up-name" name="name" type="text" autocomplete="name" maxlength="80" required />
+          <label for="sign-up-email">Email address</label>
+          <input id="sign-up-email" name="email" type="email" autocomplete="email" required />
+          <label for="sign-up-password">Create a password</label>
+          <input id="sign-up-password" name="password" type="password" autocomplete="new-password" minlength="8" required />
+          <p class="auth-hint">Use at least 8 characters.</p>
+          <button class="button button-primary auth-submit" type="submit">Create account <span aria-hidden="true">↗</span></button>
+        </form>
+
+        <p class="auth-message" id="auth-message" role="status" aria-live="polite" hidden></p>
+        <p class="auth-privacy">Your account details are protected and only visible to you.</p>
+      </section>
+    </main>
+    <!-- Keep site.js for shared site behavior and auth.js for account actions. -->
+    <script src="site.js"></script>
+    <script type="module" src="auth.js"></script>
+  </body>
+</html>

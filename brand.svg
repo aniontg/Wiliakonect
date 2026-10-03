@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="340" height="66" viewBox="0 0 340 66">
+  <path d="M8 55 24 25l10 17 12-23 11 18L72 9" fill="none" stroke="#f2a20a" stroke-linecap="square" stroke-linejoin="miter" stroke-width="7"/>
+  <path d="m65 12 9-6 2 11" fill="none" stroke="#f2a20a" stroke-linecap="square" stroke-linejoin="miter" stroke-width="5"/>
+  <rect x="14" y="21" width="5" height="5" fill="#f2a20a"/>
+  <rect x="29" y="46" width="5" height="5" fill="#3e168f"/>
+  <rect x="54" y="13" width="5" height="5" fill="#3e168f"/>
+  <text x="88" y="47" fill="#3e168f" font-family="Arial, sans-serif" font-size="31" font-weight="700" letter-spacing="-1.4">Wiliakonect</text>
+  <rect x="306" y="39" width="6" height="6" rx="1" fill="#f2a20a"/>
+</svg>

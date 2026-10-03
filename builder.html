@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#faf9fc" />
+    <meta
+      name="description"
+      content="Describe your business and create a website preview in minutes."
+    />
+    <title>Website builder — Wiliakonect</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  </head>
+  <body class="builder-page cms-admin-page">
+    <!-- EDIT: Builder header and navigation. -->
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href="index.html" aria-label="Wiliakonect home">
+          <img class="brand-logo" src="brand.svg" alt="Wiliakonect" />
+        </a>
+        <nav class="dashboard-nav" aria-label="Builder navigation">
+          <a href="index.html">Back to website</a>
+          <a href="dashboard.html" id="builder-dashboard-link" hidden>Dashboard</a>
+          <a class="builder-signin" href="auth.html">Sign in</a>
+        </nav>
+      </div>
+    </header>
+    <main class="builder-workspace">
+      <section class="builder-heading">
+        <p class="eyebrow"><span class="eyebrow-line"></span> YOUR IDEA, TAKING SHAPE</p>
+        <h1>Your business, your site.<br /><span>Build it your way.</span></h1>
+        <p>Start from one of 1,000 templates or an AI draft, then manage your pages, content, SEO details and imagery in your website CMS.</p>
+      </section>
+
+      <div class="builder-demo-note" role="note">
+        <span aria-hidden="true">✳</span>
+        <p><strong>Your website workspace:</strong> manage up to 12 pages and 20 content blocks per page, export your whole website, and publish a Vercel preview. AI generation needs the Supabase Edge Functions and private provider secrets configured.</p>
+      </div>
+
+      <section class="template-library" aria-labelledby="template-library-title">
+        <div class="template-library-heading">
+          <div>
+            <p class="dashboard-label">THE TEMPLATE LIBRARY</p>
+            <h2 id="template-library-title">Find a look you love</h2>
+            <p>Explore 1,000 editable designs across 25 categories. Use one in your workspace or download a standalone HTML file.</p>
+          </div>
+        </div>
+        <div class="template-library-tools">
+          <label class="visually-hidden" for="template-search">Search website templates</label>
+          <input id="template-search" type="search" placeholder="Search categories or styles…" autocomplete="off" />
+          <label class="visually-hidden" for="template-category">Filter by category</label>
+          <select id="template-category"><option value="">All categories</option></select>
+          <span class="template-count" id="template-count" aria-live="polite"></span>
+        </div>
+        <div class="template-grid" id="template-grid" aria-live="polite"></div>
+        <nav class="template-pagination" id="template-pagination" aria-label="Template pages">
+          <button class="project-action-button" id="template-previous" type="button">← Previous</button>
+          <span id="template-page-label"></span>
+          <button class="project-action-button" id="template-next" type="button">Next →</button>
+        </nav>
+        <p class="template-feedback" id="template-feedback" role="status" aria-live="polite"></p>
+      </section>
+
+      <section class="project-toolbar" id="project-toolbar" aria-label="Website project actions">
+        <div class="project-account-state">
+          <span class="dashboard-icon dashboard-icon-gold">↗</span>
+          <div>
+            <p class="dashboard-label">YOUR WORKSPACE</p>
+            <p id="project-account-message">Sign in to generate AI websites and save projects.</p>
+          </div>
+          <a class="button button-primary project-signin" href="auth.html?next=builder.html" id="builder-sign-in">Sign in</a>
+        </div>
+        <div class="project-actions" id="project-actions" hidden>
+          <label class="visually-hidden" for="saved-projects">Open a saved project</label>
+          <select id="saved-projects" aria-label="Open a saved project">
+            <option value="">New website</option>
+          </select>
+          <button class="project-action-button" id="new-project" type="button">New</button>
+          <button class="project-action-button" id="save-project" type="button" disabled>Save</button>
+          <button class="project-action-button project-publish-button" id="publish-project" type="button" disabled>Publish to Vercel</button>
+          <button class="project-action-button project-delete-button" id="delete-project" type="button" disabled>Delete</button>
+          <button class="project-action-button builder-signout-button" id="builder-sign-out" type="button" hidden>Sign out</button>
+          <a class="project-live-link" id="published-project-link" href="#" target="_blank" rel="noopener noreferrer" hidden>Open published site ↗</a>
+        </div>
+        <p class="project-feedback" id="project-feedback" role="status" aria-live="polite"></p>
+      </section>
+
+      <div class="builder-workbench" id="builder-workbench">
+        <form class="builder-prompt-card" id="builder-form">
+          <div class="builder-card-heading">
+            <span class="dashboard-icon">✎</span>
+            <div><p class="dashboard-label">YOUR WEBSITE BRIEF</p><h2>What are we making?</h2></div>
+          </div>
+
+          <label for="business-name">Business or website name</label>
+          <input id="business-name" name="businessName" type="text" maxlength="60" placeholder="e.g. Bloom &amp; Wild" required />
+
+          <label for="business-description">Describe your business</label>
+          <textarea
+            id="business-description"
+            name="description"
+            minlength="12"
+            maxlength="400"
+            rows="5"
+            placeholder="e.g. A friendly flower shop in Lagos making beautiful bouquets for birthdays and special moments."
+            required
+          ></textarea>
+          <span class="builder-field-hint">Include what you offer and who you help. Up to 400 characters.</span>
+
+          <label for="business-email">Contact email for your website <span class="builder-optional">(optional)</span></label>
+          <input id="business-email" name="email" type="email" autocomplete="email" placeholder="hello@yourbusiness.com" />
+
+          <label for="website-style">Choose a starting style</label>
+          <select id="website-style" name="style">
+            <option value="light">Light mode</option>
+            <option value="warm">Warm &amp; welcoming</option>
+            <option value="bold">Bold &amp; modern</option>
+            <option value="dark">Dark mode</option>
+          </select>
+
+          <label class="ai-terms-check" for="ai-terms">
+            <input id="ai-terms" name="aiTerms" type="checkbox" required />
+            <span>I am at least 18, and I understand the AI provider may process my website description to generate copy. I won’t enter confidential or sensitive personal information.</span>
+          </label>
+
+          <button class="button button-primary builder-generate" type="submit">
+            Generate website with AI <span aria-hidden="true">✳</span>
+          </button>
+          <p class="builder-feedback" id="builder-feedback" role="status" aria-live="polite"></p>
+        </form>
+
+        <section class="builder-preview-panel" aria-labelledby="preview-title">
+          <div class="builder-preview-topbar">
+            <div><p class="dashboard-label">YOUR LIVE PREVIEW</p><h2 id="preview-title">A first look at your idea</h2></div>
+            <button class="builder-download" id="download-site" type="button" disabled>Export site ZIP</button>
+          </div>
+          <div class="builder-browser">
+            <div class="builder-browser-bar"><span></span><span></span><span></span><div id="preview-address">your-website.example</div></div>
+            <iframe
+              class="builder-iframe"
+              id="website-preview"
+              title="Website preview"
+              sandbox="allow-downloads"
+              srcdoc="<!doctype html><html lang='en'><meta charset='utf-8'><body style='margin:0;display:grid;place-items:center;min-height:100vh;background:#f6f3fb;color:#51466a;font-family:Arial,sans-serif;text-align:center'><main style='padding:30px'><div style='font-size:35px;color:#8b6ccb'>✳</div><h1 style='font-size:28px'>Your idea goes here</h1><p style='color:#797283;line-height:1.6'>Fill in your website brief and create a preview.<br>Your first draft will show up right here.</p></main></body></html>"
+            ></iframe>
+          </div>
+          <p class="builder-preview-caption">A starter template you can take away and continue editing.</p>
+        </section>
+      </div>
+
+      <section class="site-editor" id="site-editor" aria-labelledby="site-editor-title" hidden>
+        <div class="site-editor-heading">
+          <div><p class="dashboard-label">CONTENT MANAGEMENT</p><h2 id="site-editor-title">Your website CMS</h2></div>
+          <p>Manage pages, search details, imagery and content blocks. Save a draft or publish your complete site.</p>
+        </div>
+        <div class="cms-page-toolbar">
+          <label for="cms-page-select">Editing page<select id="cms-page-select"></select></label>
+          <button class="project-action-button" id="cms-add-page" type="button">Add page +</button>
+          <button class="project-action-button project-delete-button" id="cms-delete-page" type="button">Delete page</button>
+          <span id="cms-page-feedback" role="status" aria-live="polite"></span>
+        </div>
+        <div class="site-editor-fields">
+          <label for="edit-brand">Website name<input id="edit-brand" maxlength="80" /></label>
+          <label for="edit-page-title">Page navigation title<input id="edit-page-title" maxlength="60" /></label>
+          <label for="edit-page-slug">Page address<input id="edit-page-slug" maxlength="48" /></label>
+          <label for="edit-eyebrow">Small heading<input id="edit-eyebrow" maxlength="90" /></label>
+          <label for="edit-headline">Main headline<input id="edit-headline" maxlength="120" /></label>
+          <label for="edit-cta">Button label<input id="edit-cta" maxlength="35" /></label>
+          <label class="site-editor-wide" for="edit-description">Introduction<textarea id="edit-description" maxlength="500" rows="3"></textarea></label>
+          <label for="edit-email">Contact email<input id="edit-email" type="email" maxlength="160" /></label>
+          <label class="site-editor-wide" for="edit-hero-image">Hero image URL <span class="builder-optional">HTTPS image URL (optional)</span><input id="edit-hero-image" type="url" maxlength="2048" placeholder="https://images.example.com/your-image.jpg" /></label>
+          <label for="edit-hero-image-alt">Hero image description<input id="edit-hero-image-alt" maxlength="160" placeholder="Describe the image for screen readers" /></label>
+          <label for="edit-seo-title">Search title<input id="edit-seo-title" maxlength="70" /></label>
+          <label class="site-editor-wide" for="edit-seo-description">Search description<textarea id="edit-seo-description" maxlength="160" rows="2"></textarea></label>
+          <label for="website-style-editor">Website appearance<select id="website-style-editor">
+            <option value="light">Light mode</option>
+            <option value="warm">Warm &amp; welcoming</option>
+            <option value="bold">Bold &amp; modern</option>
+            <option value="dark">Dark mode</option>
+          </select></label>
+        </div>
+        <section class="cms-plugins" aria-labelledby="cms-plugins-title">
+          <div class="site-sections-heading">
+            <div><p class="dashboard-label">EXTEND YOUR WEBSITE</p><h3 id="cms-plugins-title">Plugins &amp; add-ons</h3></div>
+            <p>Install safe Wiliakonect add-ons for this website. They are not third-party WordPress plugins.</p>
+          </div>
+          <div class="cms-plugin-list" id="cms-plugin-list"></div>
+          <p class="cms-plugin-feedback" id="cms-plugin-feedback" role="status" aria-live="polite"></p>
+        </section>
+        <div class="site-sections-heading"><div><p class="dashboard-label">PAGE CONTENT</p><h3>Content blocks <span id="cms-block-count"></span></h3></div><button class="project-action-button" id="add-section" type="button">Add content block +</button></div>
+        <div class="site-sections-editor" id="site-sections-editor"></div>
+      </section>
+    </main>
+    <script src="site.js"></script>
+    <script type="module" src="builder.js"></script>
+  </body>
+</html>

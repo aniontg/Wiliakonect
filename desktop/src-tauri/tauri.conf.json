@@ -1,0 +1,31 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Wiliakonect Studio",
+  "version": "0.1.0",
+  "identifier": "com.wiliakonect.studio",
+  "build": {
+    "beforeBuildCommand": "powershell -NoProfile -ExecutionPolicy Bypass -File ../prepare-frontend.ps1",
+    "frontendDist": "../web-dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Wiliakonect Studio",
+        "width": 1280,
+        "height": 860,
+        "minWidth": 980,
+        "minHeight": 700,
+        "center": true
+      }
+    ],
+    "security": {
+      "capabilities": ["default"]
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["nsis"],
+    "category": "Productivity",
+    "shortDescription": "Create and customize website drafts"
+  }
+}

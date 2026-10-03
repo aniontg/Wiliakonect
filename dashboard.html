@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#faf9fc" />
+    <meta name="description" content="Your private Wiliakonect account dashboard." />
+    <title>Dashboard — Wiliakonect</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  </head>
+  <body class="cms-admin-page" data-page="dashboard">
+    <!-- EDIT: Dashboard header links and sign-out button. -->
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href="index.html" aria-label="Wiliakonect home">
+          <img class="brand-logo" src="brand.svg" alt="Wiliakonect" />
+        </a>
+        <nav class="dashboard-nav" aria-label="Dashboard navigation">
+          <a href="index.html">Back to website</a>
+          <button class="dashboard-signout" id="sign-out" type="button">Sign out</button>
+        </nav>
+      </div>
+    </header>
+    <!-- EDIT: Account overview cards and the contact call-to-action. -->
+    <div class="cms-admin-shell">
+      <aside class="cms-admin-sidebar" aria-label="Content management navigation">
+        <p>WORKSPACE</p>
+        <a class="is-current" href="dashboard.html">Dashboard</a>
+        <a href="#dashboard-projects-title">My websites</a>
+        <a href="builder.html">Templates</a>
+        <a href="#profile-form">Profile settings</a>
+        <div class="cms-admin-sidebar-divider"></div>
+        <a href="index.html">Visit Wiliakonect site ↗</a>
+      </aside>
+      <main class="dashboard-page section-wrap">
+      <section class="dashboard-welcome">
+        <p class="eyebrow"><span class="eyebrow-line"></span> YOUR ACCOUNT</p>
+        <h1>Welcome, <span id="dashboard-name">there</span>.</h1>
+        <p class="hero-description">Here’s your personal Wiliakonect space. Your account information is private to you.</p>
+      </section>
+
+      <section class="dashboard-grid" aria-label="Account overview">
+        <article class="dashboard-card dashboard-profile">
+          <div class="dashboard-card-heading">
+            <span class="dashboard-icon">✳</span>
+            <div><p class="dashboard-label">YOUR PROFILE</p><h2>Account details</h2></div>
+          </div>
+          <p class="dashboard-email" id="dashboard-email">Loading your account…</p>
+          <form class="profile-form" id="profile-form">
+            <label for="profile-name">Display name</label>
+            <div class="profile-edit-row">
+              <input id="profile-name" name="display_name" type="text" maxlength="80" required />
+              <button class="button button-primary" type="submit">Save</button>
+            </div>
+          </form>
+          <p class="dashboard-note" id="profile-message" role="status" aria-live="polite"></p>
+        </article>
+        <article class="dashboard-card">
+          <div class="dashboard-card-heading">
+            <span class="dashboard-icon dashboard-icon-gold">✳</span>
+            <div><p class="dashboard-label">YOUR WEBSITE PROJECTS</p><h2>Your next idea starts here</h2></div>
+          </div>
+          <p class="dashboard-description">Create a new website, continue editing your saved drafts, or publish one from your builder workspace.</p>
+          <a class="button button-primary" href="builder.html">Open website builder <span aria-hidden="true">↗</span></a>
+          <div class="account-meta"><span>Member since</span><strong id="member-since">Loading…</strong></div>
+        </article>
+      </section>
+
+      <section class="dashboard-projects" aria-labelledby="dashboard-projects-title">
+        <div class="dashboard-projects-heading">
+          <div><p class="dashboard-label">CONTENT MANAGEMENT</p><h2 id="dashboard-projects-title">Your website projects</h2></div>
+          <a class="button button-primary" href="builder.html">Create a website <span aria-hidden="true">↗</span></a>
+        </div>
+        <p class="dashboard-projects-message" id="dashboard-projects-message" role="status" aria-live="polite">Loading your saved websites…</p>
+        <div class="dashboard-project-list" id="dashboard-project-list"></div>
+      </section>
+
+      <section class="dashboard-next">
+        <div>
+          <p class="eyebrow"><span class="eyebrow-line"></span> WHAT’S NEXT?</p>
+          <h2>Let’s make something <span>matter.</span></h2>
+          <p>Have a project in mind or a question for our team? We’d love to hear from you.</p>
+        </div>
+        <a class="button button-primary" href="contact.html">Talk to our team <span aria-hidden="true">↗</span></a>
+      </section>
+      <p class="dashboard-message" id="dashboard-message" role="status" aria-live="polite" hidden></p>
+      </main>
+    </div>
+    <script src="site.js"></script>
+    <script type="module" src="auth.js"></script>
+  </body>
+</html>

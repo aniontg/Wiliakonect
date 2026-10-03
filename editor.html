@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#faf9fc" />
+    <meta name="description" content="Edit your Wiliakonect website pages, content, images and search details." />
+    <title>Website editor — Wiliakonect</title>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  </head>
+  <body class="template-editor-page cms-admin-page">
+    <header class="site-header">
+      <div class="header-inner">
+        <a class="brand" href="index.html" aria-label="Wiliakonect home">
+          <img class="brand-logo" src="brand.svg" alt="Wiliakonect" />
+        </a>
+        <nav class="dashboard-nav" aria-label="Editor navigation">
+          <a href="builder.html">Template library</a>
+          <a href="dashboard.html">Dashboard</a>
+          <a href="index.html">Back to website</a>
+        </nav>
+      </div>
+    </header>
+    <main class="template-editor-shell">
+      <p class="template-editor-loading" id="template-editor-status" role="status">Loading your website editor…</p>
+      <iframe
+        class="template-editor-frame"
+        id="template-editor-frame"
+        title="Wiliakonect website editor"
+        src="builder.html?editor=1"
+      ></iframe>
+    </main>
+    <script src="editor.js" defer></script>
+  </body>
+</html>

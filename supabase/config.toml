@@ -1,0 +1,7 @@
+project_id = "ljisbrzfevkqfwkthyur"
+
+[functions.generate-website]
+verify_jwt = true
+
+[functions.publish-website]
+verify_jwt = true
