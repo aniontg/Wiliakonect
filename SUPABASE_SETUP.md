@@ -48,39 +48,56 @@ They are Wiliakonect features, not third-party WordPress plugins; the CMS does
 not execute arbitrary plugin code.
 
 The public Home, Services, About, and Contact pages also have a React-powered
-chat assistant. Its PHP API sends chat messages to Gemini using a server-only
-`GEMINI_API_KEY`; it does not save chat or lead details. Visitors can prepare
-an enquiry in their own email app and choose whether to send it. React/ReactDOM
-are loaded from esm.sh, so the chat interface needs an internet connection.
-The current static/Vercel pages do not run PHP themselves: deploy the PHP API
-on a PHP-capable host and proxy `/api/chat.php` through the same origin before
-expecting AI replies on the public site. The local FAQ guidance clearly reports
-when the AI service is unavailable.
+chat assistant. When the PHP/Supabase connection is configured, visitor chat
+and consented contact enquiries are saved in the
+Supabase `support_inbox` table and stream into the signed-in admin dashboard
+using Supabase Realtime. The protected inbox uses row-level security; visitors
+cannot read inbox records, and regular users cannot set their own admin flag.
+Chat text is sent to Gemini and stored for follow-up, so visitors are warned not
+to send passwords, payment details, or sensitive personal information. The
+contact form requires consent before storing contact details. The email link
+only prepares a draft; the visitor must choose whether to send it.
+
+React/ReactDOM are loaded from esm.sh, so the chat interface needs an internet
+connection. The current static/Vercel pages do not run PHP themselves: deploy
+the PHP API on a PHP-capable host and proxy `/api/chat.php` and `/api/lead.php`
+through the same origin. The local FAQ guidance clearly reports when AI or
+inbox storage is unavailable.
 
 ## Run the site with PHP locally
 
-Install PHP 8.1 or newer with the cURL extension. Open PowerShell in the
-repository root, set your Gemini key only in the current shell (never in a
-website file), and start the PHP development server:
+Install PHP 8.1 or newer with the cURL extension. In Supabase, apply the latest
+[`supabase/schema.sql`](./supabase/schema.sql) as described below before using
+chat or enquiries. Open PowerShell in the repository root and set the Gemini
+key and Supabase service-role key only in the current shell (never in a website
+file):
 
 ```powershell
-$secureKey = Read-Host "Gemini API key" -AsSecureString
-$keyPointer = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secureKey)
+$env:SUPABASE_URL = "https://YOUR_PROJECT_REF.supabase.co"
+$secureGemini = Read-Host "Gemini API key" -AsSecureString
+$geminiPointer = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secureGemini)
 try {
-  $env:GEMINI_API_KEY = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($keyPointer)
+  $env:GEMINI_API_KEY = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($geminiPointer)
 } finally {
-  [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($keyPointer)
+  [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($geminiPointer)
+}
+$secureServiceKey = Read-Host "Supabase secret key (server only)" -AsSecureString
+$serviceKeyPointer = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secureServiceKey)
+try {
+  $env:SUPABASE_SECRET_KEY = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($serviceKeyPointer)
+} finally {
+  [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($serviceKeyPointer)
 }
 php -S 127.0.0.1:8000 -t . router.php
 ```
 
 Then open `http://127.0.0.1:8000`. The router serves the existing HTML pages
-and forwards `/api/chat.php` to the PHP assistant. It applies a 12-request per
-minute limit per visitor using short-lived hashed-IP counters in the system
-temporary directory and rejects cross-site/non-JSON requests. Chat text is sent
-to Gemini but is not written to a database or log by this application. The
-enquiry form creates a mailto draft;
-the visitor's email client sends nothing until they choose Send.
+and forwards the chat and enquiry APIs to PHP. Never publish `SUPABASE_SECRET_KEY` in HTML, JavaScript, or
+`supabase-config.js`; put it only in server-side environment variables or the
+PHP host's secret manager. Create a fresh secret key in Supabase for this
+server; do not reuse a key that has been revoked.
+The API applies per-visitor request limits, rejects cross-site/non-JSON
+requests, and uses the service key only from PHP to write inbox rows.
 
 ## 1. Check the Supabase project connection
 
@@ -90,11 +107,30 @@ the visitor's email client sends nothing until they choose Send.
 
 ## 2. Apply the latest database schema
 
-The SQL schema now includes private website projects and a five-generation-per-
-day limit for each user. In Supabase, open **SQL Editor → New query**, paste all
-of [`supabase/schema.sql`](./supabase/schema.sql), and click **Run**. The schema
-is designed to be rerun safely. This is necessary even if you already ran its
-earlier version.
+The SQL schema includes private website projects, the AI usage limit, and the
+support inbox. In Supabase, open **SQL Editor → New query**, paste all of
+[`supabase/schema.sql`](./supabase/schema.sql), and click **Run**. The schema
+enables Realtime for `support_inbox`, enables row-level security, and is designed
+to be rerun safely. Reapply it if you have already created the earlier schema.
+
+After signing in with the account that should manage enquiries, run this query
+in Supabase SQL Editor, replacing the email with that account's email:
+
+```sql
+update public.profiles
+set is_admin = true
+where id = (
+  select id from auth.users
+  where lower(email) = lower('YOUR_ADMIN_EMAIL')
+);
+```
+
+Only mark accounts you control as admins. Admin status is not self-service:
+users can edit their display name but cannot update `profiles.is_admin`.
+Admins see the live inbox in `dashboard.html`; they can read conversations and
+enquiries, update an item's status, and permanently delete an item. Visitors
+may create records only through the rate-limited PHP API and cannot read the
+inbox. Delete records when they are no longer needed.
 
 ## 3. Create a Gemini API key
 

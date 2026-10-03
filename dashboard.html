@@ -34,6 +34,7 @@
         <p>WORKSPACE</p>
         <a class="is-current" href="dashboard.html">Dashboard</a>
         <a href="#dashboard-projects-title">My websites</a>
+        <a href="#support-inbox" id="support-inbox-nav" hidden>Live inbox</a>
         <a href="builder.html">Templates</a>
         <a href="#profile-form">Profile settings</a>
         <div class="cms-admin-sidebar-divider"></div>
@@ -80,6 +81,15 @@
         </div>
         <p class="dashboard-projects-message" id="dashboard-projects-message" role="status" aria-live="polite">Loading your saved websites…</p>
         <div class="dashboard-project-list" id="dashboard-project-list"></div>
+      </section>
+
+      <section class="dashboard-projects support-inbox" id="support-inbox" aria-labelledby="support-inbox-title" hidden>
+        <div class="dashboard-projects-heading">
+          <div><p class="dashboard-label">REAL-TIME SUPPORT</p><h2 id="support-inbox-title">Visitor inbox</h2></div>
+          <span class="support-inbox-live"><span aria-hidden="true"></span> Live updates</span>
+        </div>
+        <p class="dashboard-projects-message" id="support-inbox-message" role="status" aria-live="polite">Connecting to the live inbox…</p>
+        <div class="dashboard-project-list" id="support-inbox-list"></div>
       </section>
 
       <section class="dashboard-next">

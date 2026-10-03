@@ -3,6 +3,20 @@ const primaryNav = document.getElementById("primary-nav");
 const contentPages = new Set(["index.html", "services.html", "about.html", "contact.html"]);
 let navigationVersion = 0;
 
+function getVisitorSessionId() {
+  try {
+    const existingId = window.sessionStorage.getItem("wiliakonect-chat-id");
+    if (existingId) return existingId;
+    const id = window.crypto.randomUUID();
+    window.sessionStorage.setItem("wiliakonect-chat-id", id);
+    return id;
+  } catch {
+    return window.crypto.randomUUID();
+  }
+}
+
+window.wiliakonectVisitorId = getVisitorSessionId();
+
 function updatePageContent() {
   document.querySelectorAll(".current-year").forEach((element) => {
     element.textContent = new Date().getFullYear();
@@ -23,7 +37,7 @@ function updatePageContent() {
     serviceSelect.value = serviceChoices[requestedService];
   }
 
-  contactForm.addEventListener("submit", (event) => {
+  contactForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     if (!contactForm.reportValidity()) return;
 
@@ -31,6 +45,7 @@ function updatePageContent() {
     const email = document.getElementById("email").value.trim();
     const service = serviceSelect ? serviceSelect.value : "";
     const message = document.getElementById("message").value.trim();
+    const consent = document.getElementById("inbox-consent").checked;
     const subject = encodeURIComponent(
       service ? `${service} enquiry from ${name}` : `Website enquiry from ${name}`,
     );
@@ -39,14 +54,43 @@ function updatePageContent() {
     );
     const mailto = `mailto:wiliakonect.store@gmail.com?subject=${subject}&body=${body}`;
     const formNote = document.getElementById("form-note");
-    formNote.replaceChildren(
-      document.createTextNode("If your email app didn’t open, "),
-    );
-    const emailLink = document.createElement("a");
-    emailLink.href = mailto;
-    emailLink.textContent = "tap here to send your message";
-    formNote.append(emailLink, document.createTextNode("."));
-    window.location.href = mailto;
+    const submitButton = contactForm.querySelector('button[type="submit"]');
+    submitButton.disabled = true;
+    formNote.textContent = "Saving your enquiry securely…";
+    formNote.classList.remove("is-error");
+    try {
+      const response = await fetch("/api/lead.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          email,
+          service,
+          message,
+          consent,
+          visitor_id: window.wiliakonectVisitorId,
+        }),
+      });
+      let result;
+      try {
+        result = await response.json();
+      } catch {
+        throw new Error("The live enquiry inbox is unavailable on this host.");
+      }
+      if (!response.ok || result.saved !== true) {
+        throw new Error(result.error || "Your enquiry could not be saved.");
+      }
+      formNote.textContent = "Your enquiry is in Wiliakonect’s private live inbox. To also email the team, ";
+    } catch (error) {
+      formNote.textContent = `${error.message || "Your enquiry could not be saved."} You can still prepare an email to the team: `;
+      formNote.classList.add("is-error");
+    } finally {
+      const emailLink = document.createElement("a");
+      emailLink.href = mailto;
+      emailLink.textContent = "open an email draft";
+      formNote.append(emailLink, document.createTextNode("."));
+      submitButton.disabled = false;
+    }
   });
 }
 

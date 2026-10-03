@@ -164,7 +164,7 @@ if (!isSupabaseConfigured()) {
         const user = data.user;
         const { data: profile, error: profileError } = await supabase
           .from("profiles")
-          .select("display_name, created_at")
+          .select("display_name, created_at, is_admin")
           .eq("id", user.id)
           .single();
         if (profileError) throw profileError;
@@ -207,6 +207,157 @@ if (!isSupabaseConfigured()) {
             card.append(details, edit);
             projectList.append(card);
           }
+        }
+
+        if (profile.is_admin === true) {
+          const inbox = document.getElementById("support-inbox");
+          const inboxList = document.getElementById("support-inbox-list");
+          const inboxMessage = document.getElementById("support-inbox-message");
+          document.getElementById("support-inbox-nav").hidden = false;
+          inbox.hidden = false;
+
+          async function loadInbox() {
+            inboxMessage.textContent = "Refreshing visitor enquiries…";
+            inboxMessage.classList.remove("is-error");
+            const { data: items, error: inboxError } = await supabase
+              .from("support_inbox")
+              .select("id, visitor_id, kind, visitor_name, visitor_email, service, message, messages, status, created_at, updated_at")
+              .order("updated_at", { ascending: false })
+              .limit(100);
+            if (inboxError) throw inboxError;
+
+            inboxList.replaceChildren();
+            if (items.length === 0) {
+              inboxMessage.textContent = "No visitor conversations or enquiries yet.";
+              return;
+            }
+            inboxMessage.textContent = `${items.length} recent item${items.length === 1 ? "" : "s"} · new items appear automatically.`;
+
+            for (const item of items) {
+              const card = document.createElement("article");
+              card.className = "support-inbox-card";
+              const content = document.createElement("div");
+              const meta = document.createElement("p");
+              meta.className = "support-inbox-meta";
+              const kind = item.kind === "conversation" ? "CHAT CONVERSATION" : "CONTACT ENQUIRY";
+              const date = new Intl.DateTimeFormat(undefined, {
+                dateStyle: "medium",
+                timeStyle: "short",
+              }).format(new Date(item.updated_at));
+              meta.textContent = `${kind} · ${date}`;
+
+              const title = document.createElement("h3");
+              title.textContent = item.visitor_name || "Website visitor";
+              const contact = document.createElement("p");
+              contact.className = "support-inbox-contact";
+              contact.textContent = [
+                item.visitor_email || "",
+                item.service || "",
+              ].filter(Boolean).join(" · ");
+              content.append(meta, title);
+              if (contact.textContent) content.append(contact);
+
+              if (item.kind === "conversation" && Array.isArray(item.messages)) {
+                const conversation = document.createElement("details");
+                conversation.className = "support-inbox-conversation";
+                const summary = document.createElement("summary");
+                summary.textContent = `Read conversation (${item.messages.length} messages)`;
+                const transcript = document.createElement("ol");
+                for (const message of item.messages) {
+                  if (!message || typeof message.text !== "string") continue;
+                  const line = document.createElement("li");
+                  const role = document.createElement("strong");
+                  role.textContent = message.role === "assistant" ? "Assistant" : "Visitor";
+                  const text = document.createElement("p");
+                  text.textContent = message.text;
+                  line.append(role, text);
+                  transcript.append(line);
+                }
+                conversation.append(summary, transcript);
+                content.append(conversation);
+              } else if (item.message) {
+                const body = document.createElement("p");
+                body.className = "support-inbox-body";
+                body.textContent = item.message;
+                content.append(body);
+              }
+
+              const status = document.createElement("select");
+              status.className = "support-inbox-status";
+              status.setAttribute("aria-label", `Status for ${item.visitor_name || "visitor"} ${kind.toLowerCase()}`);
+              for (const [value, label] of [
+                ["new", "New"],
+                ["in-progress", "In progress"],
+                ["closed", "Closed"],
+              ]) {
+                const option = document.createElement("option");
+                option.value = value;
+                option.textContent = label;
+                option.selected = item.status === value;
+                status.append(option);
+              }
+              status.addEventListener("change", async () => {
+                status.disabled = true;
+                try {
+                  const { error: statusError } = await supabase
+                    .from("support_inbox")
+                    .update({ status: status.value })
+                    .eq("id", item.id);
+                  if (statusError) throw statusError;
+                } catch (statusError) {
+                  inboxMessage.textContent = statusError.message || "The inbox status could not be updated.";
+                  inboxMessage.classList.add("is-error");
+                  status.disabled = false;
+                }
+              });
+              const actions = document.createElement("div");
+              actions.className = "support-inbox-actions";
+              actions.append(status);
+              const remove = document.createElement("button");
+              remove.type = "button";
+              remove.className = "support-inbox-delete";
+              remove.textContent = "Delete";
+              remove.addEventListener("click", async () => {
+                if (!window.confirm("Permanently delete this inbox item? This cannot be undone.")) return;
+                remove.disabled = true;
+                try {
+                  const { error: deleteError } = await supabase
+                    .from("support_inbox")
+                    .delete()
+                    .eq("id", item.id);
+                  if (deleteError) throw deleteError;
+                } catch (deleteError) {
+                  inboxMessage.textContent = deleteError.message || "The inbox item could not be deleted.";
+                  inboxMessage.classList.add("is-error");
+                  remove.disabled = false;
+                }
+              });
+              actions.append(remove);
+              card.append(content, actions);
+              inboxList.append(card);
+            }
+          }
+
+          await loadInbox().catch((inboxError) => {
+            inboxMessage.textContent = inboxError.message || "The live inbox could not load. Check your Supabase schema and admin access.";
+            inboxMessage.classList.add("is-error");
+          });
+          supabase
+            .channel("wiliakonect-support-inbox")
+            .on(
+              "postgres_changes",
+              { event: "*", schema: "public", table: "support_inbox" },
+              () => loadInbox().catch((inboxError) => {
+                inboxMessage.textContent = inboxError.message || "Live inbox updates failed. Refresh the page to retry.";
+                inboxMessage.classList.add("is-error");
+              }),
+            )
+            .subscribe((status) => {
+              if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+                inboxMessage.textContent = "Live updates could not connect. Check your Supabase Realtime setup and refresh this page.";
+                inboxMessage.classList.add("is-error");
+              }
+            });
         }
 
         document

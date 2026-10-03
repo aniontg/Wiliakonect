@@ -171,6 +171,7 @@ h2 { margin-bottom: 0; color: var(--purple); font-size: 39px; font-weight: 800; 
 .contact-form textarea { min-height: 76px; resize: vertical; }
 .form-submit { width: 100%; min-height: 43px; margin-top: 14px; cursor: pointer; }
 .form-note { margin: 10px 0 0; color: #9a95a2; font-size: 9px; line-height: 1.5; text-align: center; }
+.form-note.is-error { color: #a23b34; }
 
 .site-footer { background: #21153b; color: white; }
 .footer-main { position: relative; min-height: 197px; display: grid; grid-template-columns: 1.6fr .8fr .8fr; gap: 35px; padding-top: 39px; padding-bottom: 28px; }
@@ -306,8 +307,11 @@ h2 { margin-bottom: 0; color: var(--purple); font-size: 39px; font-weight: 800; 
 .assistant-inquiry-heading button { width: 27px; height: 27px; background: #f1eef6; color: #51466a; font-size: 18px; }
 .assistant-inquiry label { display: grid; gap: 4px; color: #514b5d; font-size: 11px; font-weight: 700; }
 .assistant-inquiry input, .assistant-inquiry select, .assistant-inquiry textarea { width: 100%; min-height: 35px; padding: 7px 9px; border: 1px solid #e1dce8; border-radius: 6px; background: #fff; color: #302744; font: inherit; font-size: 12px; }
+.assistant-inquiry .assistant-consent { grid-template-columns: 16px minmax(0, 1fr); align-items: start; gap: 8px; font-size: 10px; font-weight: 500; line-height: 1.5; }
+.assistant-inquiry .assistant-consent input { width: 16px; min-height: 16px; height: 16px; margin: 1px 0 0; accent-color: var(--purple); }
 .assistant-inquiry textarea { resize: vertical; }
 .assistant-send { width: auto; min-height: 38px; padding: 0 12px; font-size: 12px; }
+.assistant-inquiry-status { margin: 0; color: #51466a; font-size: 11px; line-height: 1.5; }
 .assistant-email-link { color: var(--purple); font-size: 12px; font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }
 .assistant-inquiry > small { color: #797384; font-size: 10px; line-height: 1.4; }
 .assistant-sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; clip-path: inset(50%); }
@@ -403,6 +407,8 @@ h2 { margin-bottom: 0; color: var(--purple); font-size: 39px; font-weight: 800; 
 .response-note strong { color: white; }
 .contact-page-form { width: 100%; }
 .contact-form select { width: 100%; padding: 10px 11px; border: 1px solid #e9e6ee; border-radius: 7px; background: #fcfbfd; color: #777184; font-size: 11px; }
+.contact-form .contact-consent { display: grid; grid-template-columns: 16px minmax(0, 1fr); align-items: start; gap: 8px; font-size: 10px; font-weight: 500; line-height: 1.5; }
+.contact-form .contact-consent input { width: 16px; height: 16px; min-height: 16px; margin: 1px 0 0; accent-color: var(--purple); }
 .form-note a { color: var(--purple); font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }
 
 @media (max-width: 900px) {
@@ -510,6 +516,24 @@ h2 { margin-bottom: 0; color: var(--purple); font-size: 39px; font-weight: 800; 
 .dashboard-project-card { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 13px 14px; border: 1px solid #eeebf2; border-radius: 8px; background: #fdfcfe; }
 .dashboard-project-card h3 { margin: 0 0 4px; color: #302744; font: 700 13px "Manrope", sans-serif; overflow-wrap: anywhere; }
 .dashboard-project-card p { margin: 0; color: #817b8d; font-size: 10px; }
+.support-inbox[hidden], #support-inbox-nav[hidden] { display: none !important; }
+.support-inbox-live { display: inline-flex; align-items: center; gap: 7px; padding: 7px 10px; border: 1px solid #cce8d4; border-radius: 999px; background: #f1fbf4; color: #25683b; font-size: 12px; font-weight: 700; }
+.support-inbox-live span { width: 8px; height: 8px; border-radius: 50%; background: #2cad5c; box-shadow: 0 0 0 3px #d9f4e1; }
+.support-inbox-card { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: 14px; padding: 15px; border: 1px solid #dcdcde; border-radius: 4px; background: #fff; }
+.support-inbox-actions { display: grid; justify-items: end; gap: 8px; }
+.support-inbox-card h3 { margin: 0 0 4px; color: #1d2327; font: 700 17px "Manrope", sans-serif; overflow-wrap: anywhere; }
+.support-inbox-meta, .support-inbox-contact { margin: 0 0 7px; color: #646970; font-size: 12px; }
+.support-inbox-meta { color: #2271b1; font-size: 11px; font-weight: 700; letter-spacing: .04em; }
+.support-inbox-body { margin: 10px 0 0; color: #3c434a; font-size: 14px; line-height: 1.65; white-space: pre-wrap; overflow-wrap: anywhere; }
+.support-inbox-status { min-height: 38px; padding: 6px 9px; border: 1px solid #8c8f94; border-radius: 3px; background: #fff; color: #1d2327; font: inherit; font-size: 13px; }
+.support-inbox-delete { min-height: 32px; padding: 5px 10px; border: 1px solid #b32d2e; border-radius: 3px; background: #fff; color: #b32d2e; cursor: pointer; font-size: 12px; }
+.support-inbox-delete:disabled { cursor: wait; opacity: .6; }
+.support-inbox-conversation { margin-top: 10px; color: #3c434a; font-size: 12px; }
+.support-inbox-conversation summary { color: #2271b1; cursor: pointer; font-weight: 700; }
+.support-inbox-conversation ol { display: grid; gap: 9px; max-height: 280px; overflow: auto; margin: 9px 0 0; padding: 0; list-style: none; }
+.support-inbox-conversation li { padding: 9px; border: 1px solid #e2e4e7; background: #f8f9fa; }
+.support-inbox-conversation li strong { color: #50575e; }
+.support-inbox-conversation li p { margin: 4px 0 0; font-size: 13px; line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; }
 
 /* WordPress-inspired account and CMS workspace; the public company site keeps its own branding. */
 .cms-admin-page { background: #f0f0f1; }

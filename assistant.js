@@ -5,6 +5,21 @@ import htm from "htm";
 const html = htm.bind(React.createElement);
 const emailAddress = "wiliakonect.store@gmail.com";
 
+function getConversationId() {
+  if (typeof window.wiliakonectVisitorId === "string") {
+    return window.wiliakonectVisitorId;
+  }
+  try {
+    const existingId = window.sessionStorage.getItem("wiliakonect-chat-id");
+    if (existingId) return existingId;
+    const id = window.crypto.randomUUID();
+    window.sessionStorage.setItem("wiliakonect-chat-id", id);
+    return id;
+  } catch {
+    return window.crypto.randomUUID();
+  }
+}
+
 function localAnswer(message) {
   const question = message.toLowerCase();
   if (/\b(service|services|what do you do|offer)\b/.test(question)) {
@@ -33,6 +48,8 @@ function ChatAssistant() {
   const [isSending, setIsSending] = useState(false);
   const [showInquiry, setShowInquiry] = useState(false);
   const [emailDraftUrl, setEmailDraftUrl] = useState("");
+  const [inquiryStatus, setInquiryStatus] = useState("");
+  const conversationIdRef = useRef(getConversationId());
   const inputRef = useRef(null);
   const messagesEndRef = useRef(null);
 
@@ -63,6 +80,7 @@ function ChatAssistant() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           message,
+          conversation_id: conversationIdRef.current,
           history: messages
             .filter((entry) => entry.role !== "user" || entry.text.length <= 600)
             .slice(-6)
@@ -108,13 +126,48 @@ function ChatAssistant() {
     }
   }
 
-  function prepareEmail(event) {
+  async function prepareEmail(event) {
     event.preventDefault();
+    const inquiryForm = event.currentTarget;
+    if (!inquiryForm.reportValidity()) return;
     const form = new FormData(event.currentTarget);
     const name = String(form.get("name") || "").trim();
     const email = String(form.get("email") || "").trim();
     const service = String(form.get("service") || "").trim();
     const request = String(form.get("request") || "").trim();
+    const consent = form.get("consent") === "on";
+    setInquiryStatus("Saving your enquiry securely…");
+    setEmailDraftUrl("");
+    const payload = {
+      name,
+      email,
+      service,
+      message: request,
+      consent,
+      visitor_id: conversationIdRef.current,
+    };
+    try {
+      const response = await fetch("/api/lead.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      let result;
+      try {
+        result = await response.json();
+      } catch {
+        throw new Error("The live inbox endpoint is unavailable on this host.");
+      }
+      if (!response.ok || result.saved !== true) {
+        throw new Error(result.error || "Your enquiry could not be saved.");
+      }
+      setInquiryStatus("Your enquiry is in the live Wiliakonect inbox. Open the email draft if you also want to email the team.");
+    } catch (error) {
+      const fallbackError = error instanceof Error
+        ? error.message
+        : "Your enquiry could not be saved.";
+      setInquiryStatus(`${fallbackError} You can still open an email draft below.`);
+    }
     const subject = encodeURIComponent(`Website enquiry from ${name}`);
     const body = encodeURIComponent(
       `Name: ${name}\nEmail: ${email}\n${service ? `Interested in: ${service}\n` : ""}\n${request}`,
@@ -166,7 +219,10 @@ function ChatAssistant() {
             <form
               className="assistant-inquiry"
               onSubmit=${prepareEmail}
-              onChange=${() => setEmailDraftUrl("")}
+              onChange=${() => {
+                setEmailDraftUrl("");
+                setInquiryStatus("");
+              }}
             >
               <div className="assistant-inquiry-heading">
                 <strong>Prepare an enquiry</strong>
@@ -185,11 +241,16 @@ function ChatAssistant() {
                 </select>
               </label>
               <label>Your request<textarea name="request" rows="3" maxLength="1200" required></textarea></label>
-              <button className="assistant-send" type="submit">Prepare email draft</button>
+              <label className="assistant-consent">
+                <input name="consent" type="checkbox" required />
+                I agree my contact details and enquiry can be stored in Wiliakonect’s private inbox so the team can respond.
+              </label>
+              <button className="assistant-send" type="submit">Save enquiry & prepare email</button>
+              ${inquiryStatus && html`<p className="assistant-inquiry-status" role="status">${inquiryStatus}</p>`}
               ${emailDraftUrl && html`
                 <a className="assistant-email-link" href=${emailDraftUrl}>Open the draft in your email app ↗</a>
               `}
-              <small>This form does not send or store your details. Review and send the email yourself.</small>
+              <small>Saving adds this enquiry to the private Wiliakonect live inbox. It does not send an email; review and send the optional email draft yourself.</small>
             </form>
           `}
           <div className="assistant-prompts">
@@ -216,7 +277,7 @@ function ChatAssistant() {
             />
             <button type="submit" aria-label="Send message" disabled=${isSending || !draft.trim()}>↑</button>
           </form>
-          <p className="assistant-privacy">Don’t share passwords, payment details, or sensitive personal information. Chat messages are sent to the AI provider and aren’t saved by this site.</p>
+          <p className="assistant-privacy">When chat services are connected, messages are sent to the AI provider and stored in Wiliakonect’s private inbox for follow-up. Don’t share passwords, payment details, or sensitive information.</p>
         </section>
       `}
       <button

@@ -55,6 +55,7 @@ The shared Wiliakonect logo is bundled as `brand.svg` and used across the
 public site and software pages.
 
 The company pages include a React chat assistant. The desktop wrapper does not
-bundle PHP, so AI replies require a separately hosted PHP API; without it, the
-assistant gives local guidance and points visitors to the contact options. The
-chat UI loads React from esm.sh and therefore needs an internet connection.
+bundle PHP, so AI replies and live inbox storage require a separately hosted PHP
+API configured with the Gemini and Supabase server-side keys. Without the API,
+the assistant gives local guidance and points visitors to the contact options.
+The chat UI loads React from esm.sh and therefore needs an internet connection.

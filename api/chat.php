@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+require_once __DIR__ . '/inbox-storage.php';
+
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 header('X-Content-Type-Options: nosniff');
@@ -10,59 +12,6 @@ function respond(int $status, array $data): never
     http_response_code($status);
     echo json_encode($data, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     exit;
-}
-
-function consumeRateLimit(): ?bool
-{
-    $secret = getenv('CHAT_RATE_LIMIT_SECRET') ?: getenv('GEMINI_API_KEY');
-    if (!$secret) {
-        return null;
-    }
-
-    $clientKey = hash_hmac('sha256', $_SERVER['REMOTE_ADDR'] ?? 'unknown', $secret);
-    $path = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'wiliakonect-chat-rate-limits.json';
-    $file = @fopen($path, 'c+');
-    if (!$file || !flock($file, LOCK_EX)) {
-        if ($file) {
-            fclose($file);
-        }
-        return null;
-    }
-
-    @chmod($path, 0600);
-    $raw = stream_get_contents($file);
-    $limits = is_string($raw) ? json_decode($raw, true) : [];
-    if (!is_array($limits)) {
-        $limits = [];
-    }
-
-    $now = time();
-    foreach ($limits as $key => $record) {
-        if (!is_array($record) || ($now - (int)($record['start'] ?? 0)) >= 60) {
-            unset($limits[$key]);
-        }
-    }
-    if (count($limits) > 2000) {
-        uasort($limits, static fn(array $left, array $right): int =>
-            ((int)($left['start'] ?? 0)) <=> ((int)($right['start'] ?? 0))
-        );
-        $limits = array_slice($limits, -2000, null, true);
-    }
-
-    $record = $limits[$clientKey] ?? ['start' => $now, 'count' => 0];
-    $allowed = (int)$record['count'] < 12;
-    if ($allowed) {
-        $record['count'] = (int)$record['count'] + 1;
-        $limits[$clientKey] = $record;
-    }
-
-    rewind($file);
-    ftruncate($file, 0);
-    fwrite($file, json_encode($limits, JSON_UNESCAPED_SLASHES));
-    fflush($file);
-    flock($file, LOCK_UN);
-    fclose($file);
-    return $allowed;
 }
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -98,6 +47,10 @@ $message = trim(is_string($input['message'] ?? null) ? $input['message'] : '');
 if ($message === '' || strlen($message) > 2400) {
     respond(400, ['error' => 'Enter a message up to 600 characters long.']);
 }
+$conversationId = trim(is_string($input['conversation_id'] ?? null) ? $input['conversation_id'] : '');
+if (!inboxUuid($conversationId)) {
+    respond(400, ['error' => 'Start a new chat before sending a message.']);
+}
 
 $history = [];
 if (isset($input['history']) && is_array($input['history'])) {
@@ -115,15 +68,21 @@ if (isset($input['history']) && is_array($input['history'])) {
 $history[] = ['role' => 'user', 'parts' => [['text' => $message]]];
 
 $apiKey = getenv('GEMINI_API_KEY');
-if (!$apiKey) {
-    respond(503, ['error' => 'AI chat is not configured yet. Set GEMINI_API_KEY on the PHP server.']);
-}
-$rateLimitAllowed = consumeRateLimit();
+$rateLimitAllowed = consumeInboxRateLimit('chat', 12);
 if ($rateLimitAllowed === null) {
     respond(503, ['error' => 'The assistant is temporarily unavailable. Please contact our team directly.']);
 }
 if (!$rateLimitAllowed) {
     respond(429, ['error' => 'Chat is busy right now. Please wait a minute and try again.']);
+}
+try {
+    appendInboxConversationMessage($conversationId, 'visitor', $message);
+} catch (Throwable $error) {
+    error_log('Unable to store a visitor chat message: ' . $error->getMessage());
+    respond(503, ['error' => 'Your message could not be saved to the live inbox. Please try again.']);
+}
+if (!$apiKey) {
+    respond(503, ['error' => 'AI chat is not configured yet. Set GEMINI_API_KEY on the PHP server.']);
 }
 if (!function_exists('curl_init')) {
     respond(503, ['error' => 'The PHP cURL extension is required to connect the AI assistant.']);
@@ -189,6 +148,13 @@ if (
 ) {
     error_log('Wiliakonect assistant received an invalid AI response.');
     respond(502, ['error' => 'The assistant returned an invalid reply. Please try again.']);
+}
+
+try {
+    appendInboxConversationMessage($conversationId, 'assistant', trim($reply['answer']));
+} catch (Throwable $error) {
+    error_log('Unable to store an assistant conversation: ' . $error->getMessage());
+    respond(503, ['error' => 'The reply could not be saved to the live inbox. Please try again.']);
 }
 
 respond(200, [
